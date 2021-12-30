@@ -50,6 +50,8 @@ build:
 build_docker:
   image: quay.io/containers/buildah:latest
   stage: build_docker
+  dependencies:
+    - build
   cache:
     << : *default_cache
     policy: pull
