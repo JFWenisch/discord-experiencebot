@@ -25,6 +25,8 @@ version:
     - source version.env
     - test -n $RELEASE_VERSION
   artifacts:
+    paths:
+    - version.env
     reports:
       dotenv: version.env
   except:
@@ -57,7 +59,7 @@ build_docker:
     << : *default_cache
     policy: pull
   script:
-  - export RELEASE_VERSION=$(cat .version.env)
+  - export RELEASE_VERSION=$(cat version.env)
   - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - docker pull $CI_REGISTRY_IMAGE:latest || true
   - >
