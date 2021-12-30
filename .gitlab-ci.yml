@@ -37,7 +37,7 @@ build:
   script:
     - export RELEASE_VERSION=$(cat .version.env)
     - cd discord-bot && mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules
-    - cd discord-bot && mvn package
+    - mvn package
   artifacts:
     paths:
     - pom.xml
