@@ -18,6 +18,6 @@ USER user
 ENV USER=user
 
 
-COPY --chown=user:user discord-bot/target/*jar-with-dependencies.jar /discord-experiencebot.jar
+COPY --chown=user:user discord-bot/target/discord-*jar-with-dependencies.jar /discord-experiencebot.jar
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENTRYPOINT ["java","-jar","discord-experiencebot.jar"]
