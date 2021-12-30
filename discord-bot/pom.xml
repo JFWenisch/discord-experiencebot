@@ -7,6 +7,32 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>discord-bot</name>
 	<description>A Discord Bot created by wenisch.tech</description>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>tech.wenisch.discord.experiencebot.Bot</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+			</plugin>
+			  <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.3</version>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+            </configuration>
+        </plugin>
+		</plugins>
+	</build>
 	<repositories>
 		<repository>
 			<id>maven2</id>

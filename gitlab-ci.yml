@@ -1,0 +1,140 @@
+image: maven:3-jdk-8-slim
+
+stages:
+  - build
+  - build_docker
+  - version
+  - chart
+
+variables:
+  GSG_RELEASE_BRANCHES: master, release/*
+
+.default_cache: &default_cache
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository/
+    - target
+
+version:
+  stage: .pre
+  image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
+  variables:
+    GIT_FETCH_EXTRA_FLAGS: --tags
+  script:
+    - echo RELEASE_VERSION=$(release --bump-patch next-version) > version.env
+    - source version.env
+    - test -n $RELEASE_VERSION
+  artifacts:
+    reports:
+      dotenv: version.env
+  except:
+    - tags
+
+build:
+  stage: build
+  cache:
+    << : *default_cache
+  script:
+    - export RELEASE_VERSION=$(cat .version.env)
+    - cd discord-bot && mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules
+    - discord-bot && mvn package
+  artifacts:
+    paths:
+    - pom.xml
+    - discord-bot/target/*.jar
+  except:
+    - tags
+
+
+
+build_docker:
+  image: quay.io/containers/buildah:latest
+  stage: build_docker
+  cache:
+    << : *default_cache
+    policy: pull
+  script:
+  - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker pull $CI_REGISTRY_IMAGE:latest || true
+  - >
+    buildah bud --pull
+    --tag $CI_REGISTRY_IMAGE:$RELEASE_VERSION
+    --cache-from $CI_REGISTRY_IMAGE:latest .
+  - buildah push $CI_REGISTRY_IMAGE:$RELEASE_VERSION
+  - >
+    if [ "$CI_COMMIT_REF_SLUG" == "master" ]; then
+      buildah tag $CI_REGISTRY_IMAGE:$RELEASE_VERSION $CI_REGISTRY_IMAGE:latest
+      buildah push $CI_REGISTRY_IMAGE:latest
+    fi
+  - buildah login -u $GITHUBUSER -p ${GITHUBTOKEN} ghcr.io
+  - buildah tag $CI_REGISTRY_IMAGE:$RELEASE_VERSION $GITHUB_REGISTRY_IMAGE:$RELEASE_VERSION 
+  - buildah push $GITHUB_REGISTRY_IMAGE:$RELEASE_VERSION 
+  - >
+    if [ "$CI_COMMIT_REF_SLUG" == "master" ]; then
+      buildah tag $GITHUB_REGISTRY_IMAGE:$RELEASE_VERSION  $GITHUB_REGISTRY_IMAGE:latest
+      buildah push $GITHUB_REGISTRY_IMAGE:latest
+  except:
+  - tags
+
+version_tag:
+  stage: version
+  image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
+  before_script:
+  - apt update
+  - apt install --no-install-recommends -y curl ca-certificates
+  - curl -LO https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+  - chmod +x yq_linux_amd64 && mv yq_linux_amd64 /bin/yq
+  variables:
+    GIT_FETCH_EXTRA_FLAGS: --tags
+  script:
+    - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
+    - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
+    - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
+    - echo "RELEASE_VERSION=$RELEASE_VERSION" >> build_info
+    - rm -f release_info
+    - mv build_info release_info
+    - . release_info
+    - yq w -i chart/Chart.yaml version $RELEASE_VERSION
+    - yq w -i chart/Chart.yaml appVersion $RELEASE_VERSION
+    - echo -n "Updating version information v$RELEASE_VERSION ..."
+    - release changelog
+    - release commit-and-tag chart/Chart.yaml pom.xml CHANGELOG.md release_info
+    - release --ci-commit-tag v$RELEASE_VERSION add-download-link --name release --url $RELEASE_URL --description "$RELEASE_DESC"
+  artifacts:
+    paths:
+    - release_info
+    - chart/Chart.yaml
+    - pom.xml
+    - CHANGELOG.md
+  except:
+    - tags
+
+
+create_chart:
+  stage: chart
+  image: alpine
+  variables:
+    HELM_EXPERIMENTAL_OCI: 1  
+  before_script:
+  - apk --no-cache add curl openssl bash git
+  - curl -LO https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+  - chmod +x yq_linux_amd64 && mv yq_linux_amd64 /bin/yq
+  - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  script:
+    - yq w -i chart/Chart.yaml version $RELEASE_VERSION
+    - yq w -i chart/Chart.yaml appVersion $RELEASE_VERSION
+    - cd chart && helm package .
+    - git clone "https://$GITHUBUSER:$GITHUBTOKEN@github.com/JFWenisch/charts.git" /charts
+    - git config --global user.name "Jean-Fabian Wenisch"
+    - git config --global user.email "dev@jfwenisch.com"
+    - mv *.tgz /charts/headless-viewerrobot/headless-viewerrobot-$RELEASE_VERSION.tgz
+    - cd /charts
+    - git add --all
+    - git commit -m "headless-viewerrobot-$RELEASE_VERSION" headless-viewerrobot/headless-viewerrobot-$RELEASE_VERSION.tgz
+    - git push origin master
+  only:
+    - production
+    - master
+  dependencies:
+  - version
+  - version_tag
