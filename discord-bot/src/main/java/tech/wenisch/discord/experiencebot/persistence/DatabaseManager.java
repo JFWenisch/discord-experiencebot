@@ -21,12 +21,13 @@ public class DatabaseManager {
 	public  Connection getConnection() {
 		if (connection== null) 
 		{
-			String url = System.getenv("DATBASE_URL");
-			String user = System.getenv("DATBASE_USER");
-			String password = System.getenv("DATBASE_PASSWORD");
+			String url = System.getenv("DATABASE_URL");
+			String user = System.getenv("DATABASE_USER");
+			String password = System.getenv("DATABASE_PASSWORD");
 
 			try {
 				connection = DriverManager.getConnection(url, user, password);
+				System.out.println("Successfully connected to database "+url);
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
