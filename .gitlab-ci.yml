@@ -87,6 +87,7 @@ version_tag:
   stage: version
   image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
   before_script:
+  - apt update --allow-releaseinfo-change
   - apt install --no-install-recommends -y curl ca-certificates
   - curl -LO https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
   - chmod +x yq_linux_amd64 && mv yq_linux_amd64 /bin/yq
