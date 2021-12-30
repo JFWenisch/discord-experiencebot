@@ -37,7 +37,7 @@ build:
   cache:
     << : *default_cache
   script:
-    - export RELEASE_VERSION=$(cat .version.env)
+    - source version.env
     - cd discord-bot && mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules
     - mvn package
   artifacts:
@@ -59,7 +59,7 @@ build_docker:
     << : *default_cache
     policy: pull
   script:
-  - export RELEASE_VERSION=$(cat .version.env)
+  - export RELEASE_VERSION=$(cat version.env)
   - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - docker pull $CI_REGISTRY_IMAGE:latest || true
   - >
