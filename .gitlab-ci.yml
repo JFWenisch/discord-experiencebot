@@ -58,6 +58,7 @@ build_docker:
     << : *default_cache
     policy: pull
   script:
+  - mv discord-bot/target/*.jar discord-experiencebot.jar
   - source version.env
   - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - docker pull $CI_REGISTRY_IMAGE:latest || true
