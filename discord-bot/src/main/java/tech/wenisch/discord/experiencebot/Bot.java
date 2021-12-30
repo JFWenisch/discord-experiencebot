@@ -13,6 +13,13 @@ public class Bot {
 
 	public static void main(String[] args)
 	{
+		try {
+			System.out.println("Going to sleep for 30s");
+			Thread.sleep(30000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		System.out.println("Initializing Database Connection...");
 		database = new DatabaseManager();
 		JDA jda;
