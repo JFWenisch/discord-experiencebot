@@ -14,6 +14,7 @@
 				<configuration>
 					<archive>
 						<manifest>
+							<addClasspath>true</addClasspath>
 							<mainClass>tech.wenisch.discord.experiencebot.Bot</mainClass>
 						</manifest>
 					</archive>
