@@ -38,7 +38,7 @@ build:
     << : *default_cache
   script:
     - cd discord-bot && mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules
-    - mvn package
+    - mvn compile assembly:single
   artifacts:
     paths:
     - pom.xml
