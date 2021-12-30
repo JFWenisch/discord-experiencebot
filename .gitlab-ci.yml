@@ -51,11 +51,13 @@ build_docker:
   image: quay.io/containers/buildah:latest
   stage: build_docker
   dependencies:
+    - version
     - build
   cache:
     << : *default_cache
     policy: pull
   script:
+  - export RELEASE_VERSION=$(cat .version.env)
   - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - docker pull $CI_REGISTRY_IMAGE:latest || true
   - >
