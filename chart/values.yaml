@@ -6,14 +6,18 @@ replicaCount: 1
 
 database:
   name: experience
-  user:
-  password:
+  url: jdbc:postgresql://127.0.0.1:5432/experience
+  user: user
+  password: topsecret
+
+discord:
+  token:
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/jfwenisch/discord-experiencebot
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""

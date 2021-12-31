@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: postgres-config
   labels:
-    app: postgres
+    {{- include "discord-experiencebot.labels" . | nindent 4 }}
 data:
   POSTGRES_DB: {{ .Values.database.name }}
   POSTGRES_USER: {{ .Values.database.user }}

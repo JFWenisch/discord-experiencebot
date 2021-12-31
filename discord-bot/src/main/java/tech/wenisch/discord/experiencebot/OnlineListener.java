@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
@@ -46,6 +47,7 @@ public class OnlineListener extends ListenerAdapter
 
 			System.out.println("LEFT after "+timeOnlineMessage+" ("+event.getMember().getId()+")");
 			Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(),  startTime,endTime);
+			assignRole(event);
 			event.getMember().getUser().openPrivateChannel().queue((channel) ->
 			{
 				channel.sendMessage(generateSessionNotification(startTime, endTime, event)).queue();
@@ -53,6 +55,30 @@ public class OnlineListener extends ListenerAdapter
 		}
 	}
 
+	private void assignRole(GuildVoiceLeaveEvent event) 
+	{
+	int level = ExperienceManager.getLevel(event.getMember().getId());
+	String roleName="AUHUUR LVL "+level;
+	System.out.println(event.getMember().getId() +" is on lvl "+ level+". Trying to assign role");
+	List<Role> roles = event.getGuild().getRolesByName(roleName, true);
+	if(roles.size()>0)
+	{
+		Role destRole = roles.get(0);
+		event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
+		System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+
+	}
+	else
+	{
+		Role destRole = event.getGuild().createRole().setName(roleName).complete();
+		System.out.println("Successfully created role "+destRole);
+		event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
+		System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+	}
+	
+	
+		
+	}
 	public static long generateEXPFromSession(long startTime, long endTime)
 	{
 		long diff =  endTime-startTime;
@@ -67,7 +93,8 @@ public class OnlineListener extends ListenerAdapter
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo "+event.getMember().getEffectiveName()+", great Session right now on "+event.getGuild().getName()+"! ");
 		sb.append("You have been online for "+timeOnlineMessage+" and earned "+TimeUnit.MILLISECONDS.toSeconds(diff) +"XP. ");
-		sb.append("You now have " +totalExp+" XP in total.");
+		sb.append("You are now on lvl "+ExperienceManager.getLevel(event.getMember().getId())+" with " +totalExp+" XP in total. ");
+		sb.append("(This bot is under active development and might change over time. Feedback and feature requests are highly appreciated. Pls us the https://discord.gg/jmwz7Ga3 for all related communications)");
 		return sb.toString();
 	}
 }

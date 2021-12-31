@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import tech.wenisch.discord.experiencebot.OnlineListener;
@@ -40,6 +42,7 @@ public class DatabaseManager {
 
 		Integer sessionID= storeSessionInfo(guildID,userID,String.valueOf(startTime),String.valueOf(endTime));
 		storeSessionExp(OnlineListener.generateEXPFromSession(startTime, endTime),sessionID, userID);
+		
 	}
 	private void storeSessionExp(long generateEXPFromSession, Integer sessionID, String userID) {
 		String sql = "INSERT INTO "
@@ -117,5 +120,23 @@ public class DatabaseManager {
 	           ex.printStackTrace();
 	        }
 		 return "0";
+	}
+	public List<String> getTopFiveUsers()
+	{
+		List<String> userIDs = new ArrayList<String>();
+		String sql = "SELECT member, sum(exp) as total_exp FROM session_exp GROUP BY member ORDER BY total_exp DESC LIMIT (5)";
+		
+		 try (Statement statement = connection.createStatement();
+	                ResultSet resultSet = statement.executeQuery(sql)) {
+
+	            while (resultSet.next()) {
+	                userIDs.add(resultSet.getString(1));
+	        
+	            }
+
+	        } catch (SQLException ex) {
+	           ex.printStackTrace();
+	        }
+		 return userIDs;
 	}
 }
