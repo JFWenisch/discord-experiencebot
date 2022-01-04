@@ -29,6 +29,7 @@ public class Bot {
 					.enableIntents(GatewayIntent.GUILD_MEMBERS)
 					.build();
 			jda.addEventListener(new PingPongListener());
+			jda.addEventListener(new MessageReplyManager());
 			jda.addEventListener(new OnlineListener(jda));
 		}
 		catch (LoginException e) 

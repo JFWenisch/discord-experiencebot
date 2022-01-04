@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class OnlineListener extends ListenerAdapter
 {
@@ -35,7 +34,7 @@ public class OnlineListener extends ListenerAdapter
 	@Override
 	public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
 
-		VoiceChannel vc = event.getChannelJoined();
+	//	VoiceChannel vc = event.getChannelJoined();
 		Long startTime = timelog.get(event.getMember().getId());
 		Long endTime = System.currentTimeMillis();
 
@@ -94,7 +93,7 @@ public class OnlineListener extends ListenerAdapter
 		sb.append("Yo "+event.getMember().getEffectiveName()+", great Session right now on "+event.getGuild().getName()+"! ");
 		sb.append("You have been online for "+timeOnlineMessage+" and earned "+TimeUnit.MILLISECONDS.toSeconds(diff) +"XP. ");
 		sb.append("You are now on lvl "+ExperienceManager.getLevel(event.getMember().getId())+" with " +totalExp+" XP in total. ");
-		sb.append("(This bot is under active development and might change over time. Feedback and feature requests are highly appreciated. Pls us the https://discord.gg/jmwz7Ga3 for all related communications)");
+		sb.append("(This bot is under active development and might change over time. For more information regarding the bot and available commands just reply with help)");
 		return sb.toString();
 	}
 }
