@@ -2,6 +2,13 @@
 
 <!--- next entry here -->
 
+## 0.2.0
+2022-01-04
+
+### Features
+
+- Added help and level command in direct message (af56999deadbb7579fb7eb26dbec05189f246a7e)
+
 ## 0.1.0
 2021-12-31
 
