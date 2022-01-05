@@ -12,16 +12,21 @@ public class MessageReplyManager extends ListenerAdapter
 	{
 		Message msg = event.getMessage();
 		MessageChannel channel = event.getChannel();
-		if (msg.getContentRaw().contains("help"))
+		if(!event.getAuthor().isBot())
 		{
-			channel.sendMessage(generateHelpMessage()).queue();
-		}
-		else if (msg.getContentRaw().contains("level"))
-		{
-			channel.sendMessage(generateLevelResponse(event.getMember().getEffectiveName(), event.getMember().getId())).queue();
+
+
+			if (msg.getContentRaw().contains("help"))
+			{
+				channel.sendMessage(generateHelpMessage()).queue();
+			}
+			else if (msg.getContentRaw().contains("level"))
+			{
+				channel.sendMessage(generateLevelResponse(event.getMember().getEffectiveName(), event.getMember().getId())).queue();
+			}
 		}
 	}
-	
+
 	public static String generateHelpMessage()
 	{
 
