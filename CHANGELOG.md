@@ -2,6 +2,13 @@
 
 <!--- next entry here -->
 
+## 0.2.1
+2022-01-05
+
+### Fixes
+
+- removed recursion on direct message commands as bot was interpreting own commands (c2873b657f890a8224cdca41372c1d1885baa14c)
+
 ## 0.2.0
 2022-01-04
 
