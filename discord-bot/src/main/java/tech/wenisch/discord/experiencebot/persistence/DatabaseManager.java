@@ -40,7 +40,7 @@ public class DatabaseManager {
 
 		Integer sessionID= storeSessionInfo(guildID,userID,String.valueOf(startTime),String.valueOf(endTime));
 		storeSessionExp(OnlineListener.generateEXPFromSession(startTime, endTime),sessionID, userID);
-		
+
 	}
 	private void storeSessionExp(long generateEXPFromSession, Integer sessionID, String userID) {
 		String sql = "INSERT INTO "
@@ -57,13 +57,13 @@ public class DatabaseManager {
 			statement.executeUpdate();
 
 
-		
+
 			System.out.println("Saved  "+generateEXPFromSession+" EXP for "+userID+" based on session "+ sessionID);
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		}
-		
-		
+
+
 	}
 	private Integer storeSessionInfo(String guildID, String userID, String startTime, String endTime) 
 	{
@@ -97,7 +97,7 @@ public class DatabaseManager {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		}
-		
+
 		return sessionID;
 	}
 	public String getTotalExp(String userID)
@@ -105,36 +105,55 @@ public class DatabaseManager {
 		String sql = "SELECT sum(exp) as total_exp FROM session_exp where member ='"
 				+ userID
 				+ "'";
-		
-		 try (Statement statement = connection.createStatement();
-	                ResultSet resultSet = statement.executeQuery(sql)) {
 
-	            if (resultSet.next()) {
-	                return resultSet.getString(1);
-	        
-	            }
+		try (Statement statement = connection.createStatement();
+				ResultSet resultSet = statement.executeQuery(sql)) {
 
-	        } catch (SQLException ex) {
-	           ex.printStackTrace();
-	        }
-		 return "0";
+			if (resultSet.next()) {
+				return resultSet.getString(1);
+
+			}
+
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+		return "0";
 	}
 	public List<String> getTopFiveUsers()
 	{
 		List<String> userIDs = new ArrayList<String>();
 		String sql = "SELECT member, sum(exp) as total_exp FROM session_exp GROUP BY member ORDER BY total_exp DESC LIMIT (5)";
-		
-		 try (Statement statement = connection.createStatement();
-	                ResultSet resultSet = statement.executeQuery(sql)) {
 
-	            while (resultSet.next()) {
-	                userIDs.add(resultSet.getString(1));
-	        
-	            }
+		try (Statement statement = connection.createStatement();
+				ResultSet resultSet = statement.executeQuery(sql)) {
 
-	        } catch (SQLException ex) {
-	           ex.printStackTrace();
-	        }
-		 return userIDs;
+			while (resultSet.next()) {
+				userIDs.add(resultSet.getString(1));
+
+			}
+
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+		return userIDs;
+	}
+	public List<String> getRegulars(String guildID)
+	{
+		List<String> userIDs = new ArrayList<String>();
+	
+		String sql = "SELECT * FROM ( SELECT member, SUM (diff_minutes) as spendtime, count(*) as visits FROM ( SELECT  * ,extract(epoch FROM to_timestamp(CAST(endtime as bigint)/1000) - to_timestamp(CAST(starttime as bigint)/1000))/ 60 as diff_minutes FROM sessions WHERE  to_timestamp(CAST(endtime as bigint)/1000)  >  NOW() - INTERVAL '14 days' and guild='"+guildID+"' ) as timedifftable GROUP BY member ) as resulttable WHERE spendtime > 60 AND visits > 3";
+
+		try (Statement statement = connection.createStatement();
+				ResultSet resultSet = statement.executeQuery(sql)) {
+
+			while (resultSet.next()) {
+				userIDs.add(resultSet.getString("member"));
+				System.out.println("Aggregated for member "+resultSet.getString("member")+"  "+resultSet.getString("visits")+" visits and " +resultSet.getString("spendtime")+" spend minutes in total");
+			}
+
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+		return userIDs;
 	}
 }
