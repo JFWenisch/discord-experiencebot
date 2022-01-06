@@ -82,27 +82,36 @@ build_docker:
   except:
   - tags
 
-version_tag:
-  stage: version
-  image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
-  variables:
-    GIT_FETCH_EXTRA_FLAGS: --tags
-  script:
-    - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
-    - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
-    - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
-    - echo "RELEASE_VERSION=$RELEASE_VERSION" >> build_info
-    - rm -f release_info
-    - mv build_info release_info
-    - . release_info
-    - release changelog
-    - release commit-and-tag chart/Chart.yaml pom.xml CHANGELOG.md release_info
-    - release --ci-commit-tag v$RELEASE_VERSION add-download-link --name release --url $RELEASE_URL --description "$RELEASE_DESC"
-  artifacts:
-    paths:
-    - release_info
-    - chart/Chart.yaml
-    - pom.xml
-    - CHANGELOG.md
-  except:
-    - tags
+  version_tag:
+    stage: version
+    image: registry.gitlab.com/juhani/go-semrel-gitlab:v0.21.1
+    before_script:
+    - apt update
+    - apt install --no-install-recommends -y curl ca-certificates
+    - curl -LO https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+    - chmod +x yq_linux_amd64 && mv yq_linux_amd64 /bin/yq
+    variables:
+      GIT_FETCH_EXTRA_FLAGS: --tags
+    script:
+      - echo "RELEASE_URL=https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID/artifacts/release" > build_info
+      - echo "RELEASE_DESC=\"$(uname -mo) binary\"" >> build_info
+      - echo "RELEASE_SHA=$CI_COMMIT_SHA" >> build_info
+      - echo "RELEASE_VERSION=$RELEASE_VERSION" >> build_info
+      - rm -f release_info
+      - mv build_info release_info
+      - . release_info
+      - yq w -i chart/Chart.yaml version $RELEASE_VERSION
+      - yq w -i chart/Chart.yaml appVersion $RELEASE_VERSION
+      - echo -n "Updating version information v$RELEASE_VERSION ..."
+      - release changelog
+      - release commit-and-tag chart/Chart.yaml pom.xml CHANGELOG.md release_info
+      - release --ci-commit-tag v$RELEASE_VERSION add-download-link --name release --url $RELEASE_URL --description "$RELEASE_DESC"
+    artifacts:
+      paths:
+      - release_info
+      - chart/Chart.yaml
+      - pom.xml
+      - CHANGELOG.md
+    except:
+      - tags
+  
