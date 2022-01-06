@@ -2,6 +2,14 @@
 
 <!--- next entry here -->
 
+## 0.3.0
+2022-01-06
+
+### Features
+
+- Added auto management of regulars. Upon voice join, the bot creates a... (67170b5a3df3fd1f7d1101c5c02ab2fce4168a54)
+- Implemented automated role management for regulars ( People who have been in voice for more than 60 minutes and at least 3 times within the last 14 days ) (6cf2d29acf02d4adf28a8dc3da222b0de5d6dc7a)
+
 ## 0.2.1
 2022-01-05
 
