@@ -25,3 +25,9 @@ XP | LVL |
 20762 | 9
 156089 | 10
 556089 | 12 
+
+## Automatic assignment of 'REGULARS'
+ Upon voice join, the bot creates a new thread which lists all users that have been more than 3 times in voice and in total longer than 60 minutes within the last 14 days. These users are automatically added to a role name "%SERVERNAME& REGULARS". Guild members which are not (anymore) matching these filter are automatically removed from the role
+
+## Required Permissions
+MANAGE_ROLES
