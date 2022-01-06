@@ -34,10 +34,11 @@ public class MessageReplyManager extends ListenerAdapter
 
 		sb.append("This bot is under active development and might change over time. \n");
 		sb.append("Available commands (reply within this private chat with the keyword): \n\n");
-		sb.append("\n\\n\n\n");
+		sb.append("\n\n");
 		sb.append("level - returns your level \n");
 		sb.append("help - Displays this message with more information about the bot \n");
 		sb.append("ping - Answers with pong as fast as possible, used for debugging purposes \n");
+		sb.append("\n\n");
 		sb.append("Feedback and feature requests are highly appreciated. Pls use the https://discord.gg/jmwz7Ga3 for all related communications \n \n");
 		return sb.toString();
 	}
@@ -46,7 +47,7 @@ public class MessageReplyManager extends ListenerAdapter
 		String totalExp = Bot.getDatabaseConnection().getTotalExp(userID);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo "+username+", ");
-		sb.append("You are now on lvl "+ExperienceManager.getLevel(userID)+" with " +totalExp+" XP in total. ");
+		sb.append("You are now on lvl "+RoleManager.getLevel(userID)+" with " +totalExp+" XP in total. ");
 		return sb.toString();
 	}
 
