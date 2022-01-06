@@ -4,6 +4,7 @@ stages:
   - build
   - build_docker
   - version
+  - chart
 
 variables:
   GSG_RELEASE_BRANCHES: master, release/*
@@ -42,6 +43,25 @@ build:
     paths:
     - pom.xml
     - discord-bot/target/*.jar
+  except:
+    - tags
+
+prepare_chart:
+  stage: build
+  image: ubuntu
+  before_script:
+  - apt-get update
+  - apt install curl -y
+  - curl -LO https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+  - chmod +x yq_linux_amd64 && mv yq_linux_amd64 /bin/yq
+  variables:
+    GIT_FETCH_EXTRA_FLAGS: --tags
+  script:
+    - yq w -i chart/Chart.yaml version $RELEASE_VERSION
+    - yq w -i chart/Chart.yaml appVersion $RELEASE_VERSION
+  artifacts:
+    paths:
+    - chart/Chart.yaml
   except:
     - tags
 
@@ -106,3 +126,29 @@ version_tag:
     - CHANGELOG.md
   except:
     - tags
+
+create_chart:
+  stage: chart
+  image: alpine
+  variables:
+    HELM_EXPERIMENTAL_OCI: 1  
+  before_script:
+  - apk --no-cache add curl openssl bash git
+  - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  script:
+    - cd chart && helm package .
+    - git clone "https://$GITHUBUSER:$GITHUBTOKEN@github.com/JFWenisch/charts.git" /charts
+    - git config --global user.name "Jean-Fabian Wenisch"
+    - git config --global user.email "dev@jfwenisch.com"
+    - mv *.tgz /charts/discord-experiencebot/discord-experiencebot-$RELEASE_VERSION.tgz
+    - cd /charts
+    - git add --all
+    - git commit -m "discord-experiencebot-$RELEASE_VERSION" discord-experiencebot/discord-experiencebot-$RELEASE_VERSION.tgz
+    - git push origin master
+  only:
+    - production
+    - master
+  dependencies:
+  - version
+  - version_tag
+  - prepare_chart
