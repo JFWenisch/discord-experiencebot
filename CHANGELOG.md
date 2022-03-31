@@ -2,6 +2,13 @@
 
 <!--- next entry here -->
 
+## 0.3.1
+2022-03-31
+
+### Fixes
+
+- fixed a bug that lead to users not being removed from regulars role (1e7001a2728f4fe50fa03942de5a56833bda61c4)
+
 ## 0.3.0
 2022-01-06
 
