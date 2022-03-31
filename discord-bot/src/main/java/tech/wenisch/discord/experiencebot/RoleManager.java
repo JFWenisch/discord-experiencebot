@@ -4,9 +4,9 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 
 public class RoleManager {
 
-	public static int getLevel(String userID)
+	public static int getLevel(String userID, String guildID)
 	{
-		double totalExp = Double.parseDouble(Bot.getDatabaseConnection().getTotalExp(userID));
+		double totalExp = Double.parseDouble(Bot.getDatabaseConnection().getTotalExp(userID,guildID));
 		return (int) (Math.log(totalExp)/Math.log(3));
 	}
 

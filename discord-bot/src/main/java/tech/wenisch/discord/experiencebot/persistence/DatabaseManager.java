@@ -100,10 +100,12 @@ public class DatabaseManager {
 
 		return sessionID;
 	}
-	public String getTotalExp(String userID)
+	public String getTotalExp(String userID, String guildID)
 	{
-		String sql = "SELECT sum(exp) as total_exp FROM session_exp where member ='"
+		String sql = "SELECT sum(exp) as total_exp FROM session_exp  INNER JOIN sessions on session_exp.session = sessions.id  where session_exp.member ='"
 				+ userID
+				+ "' and sessions.guild='"
+				+ guildID
 				+ "'";
 
 		try (Statement statement = connection.createStatement();

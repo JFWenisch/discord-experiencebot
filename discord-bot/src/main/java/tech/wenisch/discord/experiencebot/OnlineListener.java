@@ -57,7 +57,7 @@ public class OnlineListener extends ListenerAdapter
 
 	private void assignRole(GuildVoiceLeaveEvent event) 
 	{
-	int level = RoleManager.getLevel(event.getMember().getId());
+	int level = RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId());
 	String roleName=event.getGuild().getName().toUpperCase()+" LVL "+level;
 	System.out.println(event.getMember().getId() +" is on lvl "+ level+". Trying to assign role");
 	List<Role> roles = event.getGuild().getRolesByName(roleName, true);
@@ -87,13 +87,13 @@ public class OnlineListener extends ListenerAdapter
 
 	public static String generateSessionNotification(long startTime, long endTime,GuildVoiceLeaveEvent event)
 	{
-		String totalExp = Bot.getDatabaseConnection().getTotalExp(event.getMember().getId());
+		String totalExp = Bot.getDatabaseConnection().getTotalExp(event.getMember().getId(),event.getGuild().getId());
 		long diff =  endTime-startTime;
 		String timeOnlineMessage =TimeUtils.formatDuration(diff);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo "+event.getMember().getEffectiveName()+", great Session right now on "+event.getGuild().getName()+"! ");
 		sb.append("You have been online for "+timeOnlineMessage+" and earned "+TimeUnit.MILLISECONDS.toSeconds(diff) +"XP. ");
-		sb.append("You are now on lvl "+RoleManager.getLevel(event.getMember().getId())+" with " +totalExp+" XP in total. ");
+		sb.append("You are now on lvl "+RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId())+" with " +totalExp+" XP in total. ");
 		sb.append("(This bot is under active development and might change over time. For more information regarding the bot and available commands just reply with help)");
 		return sb.toString();
 	}

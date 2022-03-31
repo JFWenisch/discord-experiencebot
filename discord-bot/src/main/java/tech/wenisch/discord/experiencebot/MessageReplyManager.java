@@ -22,7 +22,7 @@ public class MessageReplyManager extends ListenerAdapter
 			}
 			else if (msg.getContentRaw().contains("level"))
 			{
-				channel.sendMessage(generateLevelResponse(event.getMember().getEffectiveName(), event.getMember().getId())).queue();
+			//	channel.sendMessage(generateLevelResponse(event.getMember().getEffectiveName(), event.getMember().getId())).queue();
 			}
 		}
 	}
@@ -42,12 +42,12 @@ public class MessageReplyManager extends ListenerAdapter
 		sb.append("Feedback and feature requests are highly appreciated. Pls use the https://discord.gg/jmwz7Ga3 for all related communications \n \n");
 		return sb.toString();
 	}
-	public static String generateLevelResponse(String username, String userID)
+	public static String generateLevelResponse(String username, String userID, String guildID)
 	{
-		String totalExp = Bot.getDatabaseConnection().getTotalExp(userID);
+		String totalExp = Bot.getDatabaseConnection().getTotalExp(userID,guildID);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo "+username+", ");
-		sb.append("You are now on lvl "+RoleManager.getLevel(userID)+" with " +totalExp+" XP in total. ");
+		sb.append("You are now on lvl "+RoleManager.getLevel(userID,guildID)+" with " +totalExp+" XP in total. ");
 		return sb.toString();
 	}
 
