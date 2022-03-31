@@ -47,7 +47,7 @@ public class UpdateRegularsThread extends Thread
 		{
 			if(!assignableMembers.contains(members.get(i).getId()))
 			{
-				event.getGuild().removeRoleFromMember(members.get(i), createdRole);
+				event.getGuild().removeRoleFromMember(members.get(i), createdRole).queue();
 				System.out.println("Removed member " +members.get(i) +" from regular role");
 			}
 		}    
