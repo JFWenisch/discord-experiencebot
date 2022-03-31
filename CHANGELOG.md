@@ -2,6 +2,13 @@
 
 <!--- next entry here -->
 
+## 0.4.0
+2022-03-31
+
+### Features
+
+- Updated EXP to be aggregated per guild (6f794c4bba2691f7b239bbd756479e8838d698b7)
+
 ## 0.3.1
 2022-03-31
 
