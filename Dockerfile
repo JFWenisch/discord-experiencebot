@@ -11,13 +11,10 @@ RUN useradd --create-home -s /bin/bash user && \
     adduser user sudo && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
 
-RUN mkdir /images
-RUN chmod -R 777 /images
-
 USER user
 ENV USER=user
 
 
-COPY --chown=user:user discord-bot/target/discord-experiencebot*.jar /discord-experiencebot.jar
+COPY --chown=user:user *.jar /discord-experiencebot.jar
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENTRYPOINT ["java","-jar","discord-experiencebot.jar"]

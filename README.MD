@@ -1,6 +1,6 @@
 
 # Discord Experiencebot - A discord bot
-![Build](https://github.com/JFWenisch/discord-experiencebot/actions/workflows/ci.yml/badge.svg) ![Version](https://img.shields.io/github/v/release/jfwenisch/discord-experiencebot) ![License](https://img.shields.io/github/license/jfwenisch/discord-experiencebot)   ![Maintainability](https://img.shields.io/codeclimate/maintainability/JFWenisch/discord-experiencebot)
+![Build](https://github.com/JFWenisch/discord-experiencebot/actions/workflows/build.yml/badge.svg) ![Version](https://img.shields.io/github/v/release/jfwenisch/discord-experiencebot) ![License](https://img.shields.io/github/license/jfwenisch/discord-experiencebot)   ![Maintainability](https://img.shields.io/codeclimate/maintainability/JFWenisch/discord-experiencebot)
  ![Size](https://img.shields.io/github/repo-size/jfwenisch/discord-experiencebot) 
   
 
