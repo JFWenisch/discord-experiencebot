@@ -38,12 +38,6 @@ jobs:
     - name: Build with Maven
       run: cd discord-bot && mvn -B package --file pom.xml
     
-    - name: Archive production artifacts
-      uses: actions/upload-artifact@v3
-      with:
-          name: target
-          path: |
-            discord-bot/target
             
     - name: Log in to the Container registry
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -58,12 +52,12 @@ jobs:
       with:
         images: ghcr.io/jfwenisch/discord-experiencebot
         
-    - name: Download a single artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: target
-        path: discord-bot/target
-        
+    - name: list files root
+      run: ls -l
+      
+    - name: list files target
+      run: cd discord-bot/target && ls -l
+      
     - name: Build and push Docker image
       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
       with:
