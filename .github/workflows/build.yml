@@ -1,6 +1,13 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches: 
+      - "main" 
+      - "develop" 
+      - "feature/*" 
+  pull_request:
+    branches: [ "main, develop" ]
 
 jobs:
     
