@@ -42,6 +42,8 @@ spec:
               value: {{  .Values.database.password | quote }}
             - name: DC_TOKEN
               value: {{ .Values.discord.token | quote }}
+            - name: SENTRY_DSN
+              value: {{ .Values.sentry.dsn | quote }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: postgres

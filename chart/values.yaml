@@ -13,11 +13,14 @@ database:
 discord:
   token:
 
+sentry:
+  dsn:
+
 image:
   repository: ghcr.io/jfwenisch/discord-experiencebot
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "v0.6.0"
 
 imagePullSecrets: []
 nameOverride: ""

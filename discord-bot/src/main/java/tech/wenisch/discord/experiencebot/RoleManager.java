@@ -1,9 +1,12 @@
 package tech.wenisch.discord.experiencebot;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 
 public class RoleManager {
-
+	private final static ExecutorService executor = Executors.newFixedThreadPool(1);
 	public static int getLevel(String userID, String guildID)
 	{
 		double totalExp = Double.parseDouble(Bot.getDatabaseConnection().getTotalExp(userID,guildID));
@@ -12,7 +15,11 @@ public class RoleManager {
 
 	public static void updateRegularRole(GuildVoiceJoinEvent event)
 	{
-		new UpdateRegularsThread(event).start();
+		try {
+			executor.submit(new UpdateRegularsThread(event));
+		} catch (Exception e) {
+			SentryManager.getInstance().handleError(e);
+		}
 	}
 
 }
