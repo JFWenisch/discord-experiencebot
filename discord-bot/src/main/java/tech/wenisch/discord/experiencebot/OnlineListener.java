@@ -9,11 +9,11 @@ import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import tech.wenisch.discord.experiencebot.exceptions.NoSessionStartTimeException;
 
 public class OnlineListener extends ListenerAdapter {
 	Map<String, Long> timelog = new HashMap<String, Long>();
@@ -42,32 +42,41 @@ public class OnlineListener extends ListenerAdapter {
 		Long startTime = timelog.get(event.getMember().getId());
 		Long endTime = System.currentTimeMillis();
 
-		long diff = endTime - startTime;
-		if (diff > 30) {
-			ITransaction transaction = null;
-			if (SentryManager.getInstance().isActivated()) {
-				transaction = Sentry.startTransaction("StoreEXP",
-						event.getGuild().getName() + "-" + event.getMember().getId());
-			}
-			try {
-				String timeOnlineMessage = TimeUtils.formatDuration(diff);
-
-				System.out.println("LEFT after " + timeOnlineMessage + " (" + event.getMember().getId() + ")");
-				Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(), startTime,
-						endTime);
-			} catch (Exception e) {
-				SentryManager.getInstance().handleError(e);
-			} finally {
+		if(startTime!=null)
+		{
+			long diff = endTime - startTime;
+			if (diff > 30) {
+				ITransaction transaction = null;
 				if (SentryManager.getInstance().isActivated()) {
-					transaction.finish();
+					transaction = Sentry.startTransaction("StoreEXP",
+							event.getGuild().getName() + "-" + event.getMember().getId());
 				}
+				try {
+					String timeOnlineMessage = TimeUtils.formatDuration(diff);
+
+					System.out.println("LEFT after " + timeOnlineMessage + " (" + event.getMember().getId() + ")");
+					Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(), startTime,
+							endTime);
+				} catch (Exception e) {
+					SentryManager.getInstance().handleError(e);
+				} finally {
+					if (SentryManager.getInstance().isActivated()) {
+						transaction.finish();
+					}
+				}
+
+				RoleManager.assignRole(event);
+
+				event.getMember().getUser().openPrivateChannel().queue((channel) -> {
+					channel.sendMessage(generateSessionNotification(startTime, endTime, event)).queue();
+				});
 			}
-
-			RoleManager.assignRole(event);
-
-			event.getMember().getUser().openPrivateChannel().queue((channel) -> {
-				channel.sendMessage(generateSessionNotification(startTime, endTime, event)).queue();
-			});
+		}
+		else
+		{
+			String errorMessage="Session for" +event.getMember().getEffectiveName()+" on "+event.getGuild().getName()+" has no start time. Skipping EXP generation.";
+			SentryManager.getInstance().handleError(new NoSessionStartTimeException(errorMessage));
+			System.out.println(errorMessage);
 		}
 	}
 
@@ -86,7 +95,7 @@ public class OnlineListener extends ListenerAdapter {
 		sb.append("You have been online for " + timeOnlineMessage + " and earned "
 				+ TimeUnit.MILLISECONDS.toSeconds(diff) + "XP. ");
 		sb.append("You are now on lvl " + RoleManager.getLevel(event.getMember().getId(), event.getGuild().getId())
-				+ " with " + totalExp + " XP in total. ");
+		+ " with " + totalExp + " XP in total. ");
 		sb.append(
 				"(This bot is under active development and might change over time. For more information regarding the bot and available commands just reply with help)");
 		return sb.toString();
