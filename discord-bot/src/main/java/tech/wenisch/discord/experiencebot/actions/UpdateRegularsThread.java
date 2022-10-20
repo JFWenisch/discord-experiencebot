@@ -1,4 +1,4 @@
-package tech.wenisch.discord.experiencebot;
+package tech.wenisch.discord.experiencebot.actions;
 
 import java.util.List;
 
@@ -7,11 +7,13 @@ import io.sentry.Sentry;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import tech.wenisch.discord.experiencebot.Bot;
+import tech.wenisch.discord.experiencebot.SentryManager;
 
 public class UpdateRegularsThread extends Thread {
 	GuildVoiceJoinEvent event;
 
-	UpdateRegularsThread(GuildVoiceJoinEvent event) {
+	public UpdateRegularsThread(GuildVoiceJoinEvent event) {
 		this.event = event;
 	}
 

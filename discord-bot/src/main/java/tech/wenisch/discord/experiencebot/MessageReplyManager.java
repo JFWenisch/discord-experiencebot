@@ -47,7 +47,7 @@ public class MessageReplyManager extends ListenerAdapter {
 		sb.append("ping - Answers with pong as fast as possible, used for debugging purposes \n");
 		sb.append("\n\n");
 		sb.append(
-				"Feedback and feature requests are highly appreciated. Pls use the https://discord.gg/jmwz7Ga3 for all related communications \n \n");
+				"Feedback and feature requests are highly appreciated. Pls use the https://discord.gg/r2rJh6s49x for all related communications \n \n");
 		return sb.toString();
 	}
 
