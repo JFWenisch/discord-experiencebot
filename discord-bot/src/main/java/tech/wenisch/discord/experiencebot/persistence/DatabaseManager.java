@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tech.wenisch.discord.experiencebot.OnlineListener;
+import tech.wenisch.discord.experiencebot.SentryManager;
 
 public class DatabaseManager {
 
@@ -29,7 +30,7 @@ public class DatabaseManager {
 				connection = DriverManager.getConnection(url, user, password);
 				System.out.println("Successfully connected to database "+url);
 			} catch (SQLException ex) {
-				ex.printStackTrace();
+				SentryManager.getInstance().handleError(ex);
 			}
 		}
 
@@ -60,7 +61,7 @@ public class DatabaseManager {
 
 			System.out.println("Saved  "+generateEXPFromSession+" EXP for "+userID+" based on session "+ sessionID);
 		} catch (SQLException ex) {
-			ex.printStackTrace();
+			SentryManager.getInstance().handleError(ex);
 		}
 
 
@@ -95,7 +96,7 @@ public class DatabaseManager {
 			}
 			System.out.println("Saved session "+sessionID+" for "+userID+" on "+ guildID);
 		} catch (SQLException ex) {
-			ex.printStackTrace();
+			SentryManager.getInstance().handleError(ex);
 		}
 
 		return sessionID;
@@ -117,7 +118,7 @@ public class DatabaseManager {
 			}
 
 		} catch (SQLException ex) {
-			ex.printStackTrace();
+			SentryManager.getInstance().handleError(ex);
 		}
 		return "0";
 	}
@@ -135,7 +136,7 @@ public class DatabaseManager {
 			}
 
 		} catch (SQLException ex) {
-			ex.printStackTrace();
+			SentryManager.getInstance().handleError(ex);
 		}
 		return userIDs;
 	}
@@ -154,7 +155,7 @@ public class DatabaseManager {
 			}
 
 		} catch (SQLException ex) {
-			ex.printStackTrace();
+			SentryManager.getInstance().handleError(ex);
 		}
 		return userIDs;
 	}
