@@ -36,7 +36,7 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: cd discord-bot && mvn -B package --file pom.xml
+      run: cd discord-bot && mvn versions:set -DnewVersion=${{needs.version.outputs.tag}} && mvn -B package --file pom.xml
     
             
     - name: Log in to the Container registry

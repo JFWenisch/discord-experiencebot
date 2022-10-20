@@ -20,6 +20,7 @@ public class SentryManager {
     	    		  options.setTracesSampleRate(1.0);
     	    		  // When first trying Sentry it's good to see what the SDK is doing:
     	    		 // options.setDebug(true);
+    	    		  options.setRelease("discord-experience@"+Bot.class.getPackage().getImplementationVersion());
     	    		});
     			isActivated=true;
     		}

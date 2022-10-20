@@ -14,6 +14,7 @@ public class Bot {
 	public static void main(String[] args)
 	{
 		try {
+			System.out.println("Starting Discord Experiencebot v"+Bot.class.getPackage().getImplementationVersion());
 			System.out.println("Going to sleep for 30s");
 			Thread.sleep(30000);
 		} catch (InterruptedException e1) {

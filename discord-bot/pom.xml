@@ -14,6 +14,8 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<mainClass>tech.wenisch.discord.experiencebot.Bot</mainClass>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
 					</archive>
 					<descriptorRefs>
