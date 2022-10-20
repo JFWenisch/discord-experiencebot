@@ -17,8 +17,8 @@ public class Bot {
 			System.out.println("Going to sleep for 30s");
 			Thread.sleep(30000);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			SentryManager.getInstance().handleError(e1);
+			
 		}
 		System.out.println("Initializing Database Connection...");
 		database = new DatabaseManager();
@@ -35,7 +35,7 @@ public class Bot {
 		catch (LoginException e) 
 		{
 
-			e.printStackTrace();
+			SentryManager.getInstance().handleError(e);
 		}
 	}
 	public static DatabaseManager getDatabaseConnection()

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.sentry.ITransaction;
+import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -35,7 +37,7 @@ public class OnlineListener extends ListenerAdapter
 	@Override
 	public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
 
-	//	VoiceChannel vc = event.getChannelJoined();
+		//	VoiceChannel vc = event.getChannelJoined();
 		Long startTime = timelog.get(event.getMember().getId());
 		Long endTime = System.currentTimeMillis();
 
@@ -43,11 +45,34 @@ public class OnlineListener extends ListenerAdapter
 		long diff =  endTime-startTime;
 		if(diff > 30)
 		{
-			String timeOnlineMessage =TimeUtils.formatDuration(diff);
+			ITransaction transaction = null;
+			if (SentryManager.getInstance().isActivated()) {
+				transaction = Sentry.startTransaction("StoreEXP",event.getGuild().getName()+"-"+event.getMember().getId());
+			}
+			try {
+				String timeOnlineMessage =TimeUtils.formatDuration(diff);
 
-			System.out.println("LEFT after "+timeOnlineMessage+" ("+event.getMember().getId()+")");
-			Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(),  startTime,endTime);
-			assignRole(event);
+				System.out.println("LEFT after "+timeOnlineMessage+" ("+event.getMember().getId()+")");
+				Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(),  startTime,endTime);
+			} catch (Exception e) {
+				SentryManager.getInstance().handleError(e);
+			} finally {
+				if (SentryManager.getInstance().isActivated()) {
+					transaction.finish();
+				}
+			}
+			if (SentryManager.getInstance().isActivated()) {
+				transaction = Sentry.startTransaction("StoreEXP",event.getGuild().getName()+"-"+event.getMember().getId());
+			}
+			try {
+				assignRole(event);
+			} catch (Exception e) {
+				SentryManager.getInstance().handleError(e);
+			} finally {
+				if (SentryManager.getInstance().isActivated()) {
+					transaction.finish();
+				}
+			}
 			event.getMember().getUser().openPrivateChannel().queue((channel) ->
 			{
 				channel.sendMessage(generateSessionNotification(startTime, endTime, event)).queue();
@@ -57,27 +82,27 @@ public class OnlineListener extends ListenerAdapter
 
 	private void assignRole(GuildVoiceLeaveEvent event) 
 	{
-	int level = RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId());
-	String roleName=event.getGuild().getName().toUpperCase()+" LVL "+level;
-	System.out.println(event.getMember().getId() +" is on lvl "+ level+". Trying to assign role");
-	List<Role> roles = event.getGuild().getRolesByName(roleName, true);
-	if(roles.size()>0)
-	{
-		Role destRole = roles.get(0);
-		event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
-		System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+		int level = RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId());
+		String roleName=event.getGuild().getName().toUpperCase()+" LVL "+level;
+		System.out.println(event.getMember().getId() +" is on lvl "+ level+". Trying to assign role");
+		List<Role> roles = event.getGuild().getRolesByName(roleName, true);
+		if(roles.size()>0)
+		{
+			Role destRole = roles.get(0);
+			event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
+			System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
 
-	}
-	else
-	{
-		Role destRole = event.getGuild().createRole().setName(roleName).complete();
-		System.out.println("Successfully created role "+destRole);
-		event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
-		System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
-	}
-	
-	
-		
+		}
+		else
+		{
+			Role destRole = event.getGuild().createRole().setName(roleName).complete();
+			System.out.println("Successfully created role "+destRole);
+			event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
+			System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+		}
+
+
+
 	}
 	public static long generateEXPFromSession(long startTime, long endTime)
 	{
