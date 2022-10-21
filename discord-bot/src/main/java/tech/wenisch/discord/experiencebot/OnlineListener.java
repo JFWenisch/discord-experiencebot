@@ -42,39 +42,19 @@ public class OnlineListener extends ListenerAdapter {
 		Long startTime = timelog.get(event.getMember().getId());
 		Long endTime = System.currentTimeMillis();
 
-		if(startTime!=null)
-		{
+		if (startTime != null) {
 			long diff = endTime - startTime;
 			if (diff > 30) {
-				ITransaction transaction = null;
-				if (SentryManager.getInstance().isActivated()) {
-					transaction = Sentry.startTransaction("StoreEXP",
-							event.getGuild().getName() + "-" + event.getMember().getId());
-				}
-				try {
-					String timeOnlineMessage = TimeUtils.formatDuration(diff);
-
-					System.out.println("LEFT after " + timeOnlineMessage + " (" + event.getMember().getId() + ")");
-					Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(), startTime,
-							endTime);
-				} catch (Exception e) {
-					SentryManager.getInstance().handleError(e);
-				} finally {
-					if (SentryManager.getInstance().isActivated()) {
-						transaction.finish();
-					}
-				}
-
+				ExperienceManager.storeEXP(event, startTime, endTime, diff);
 				RoleManager.assignRole(event);
 
 				event.getMember().getUser().openPrivateChannel().queue((channel) -> {
 					channel.sendMessage(generateSessionNotification(startTime, endTime, event)).queue();
 				});
 			}
-		}
-		else
-		{
-			String errorMessage="Session for" +event.getMember().getEffectiveName()+" on "+event.getGuild().getName()+" has no start time. Skipping EXP generation.";
+		} else {
+			String errorMessage = "Session for" + event.getMember().getEffectiveName() + " on "
+					+ event.getGuild().getName() + " has no start time. Skipping EXP generation.";
 			SentryManager.getInstance().handleError(new NoSessionStartTimeException(errorMessage));
 			System.out.println(errorMessage);
 		}
@@ -95,7 +75,7 @@ public class OnlineListener extends ListenerAdapter {
 		sb.append("You have been online for " + timeOnlineMessage + " and earned "
 				+ TimeUnit.MILLISECONDS.toSeconds(diff) + "XP. ");
 		sb.append("You are now on lvl " + RoleManager.getLevel(event.getMember().getId(), event.getGuild().getId())
-		+ " with " + totalExp + " XP in total. ");
+				+ " with " + totalExp + " XP in total. ");
 		sb.append(
 				"(This bot is under active development and might change over time. For more information regarding the bot and available commands just reply with help)");
 		return sb.toString();
