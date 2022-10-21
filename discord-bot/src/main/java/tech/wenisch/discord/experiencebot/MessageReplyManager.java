@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class MessageReplyManager extends ListenerAdapter {
 	@Override
@@ -52,7 +53,7 @@ public class MessageReplyManager extends ListenerAdapter {
 	}
 
 	public static String generateLevelResponse(String username, String userID, String guildID) {
-		String totalExp = Bot.getDatabaseConnection().getTotalExp(userID, guildID);
+		String totalExp = DatabaseManager.getInstance().getTotalExp(userID, guildID);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo " + username + ", ");
 		sb.append(

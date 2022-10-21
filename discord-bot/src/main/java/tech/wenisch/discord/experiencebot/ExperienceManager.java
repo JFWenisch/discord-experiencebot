@@ -3,6 +3,7 @@ package tech.wenisch.discord.experiencebot;
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class ExperienceManager 
 {
@@ -16,7 +17,7 @@ public class ExperienceManager
 		try {
 			String timeOnlineMessage = TimeUtils.formatDuration(diff);
 			System.out.println(event.getMember().getEffectiveName()+" left "+event.getGuild().getName()+ "after" + timeOnlineMessage);
-			Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(),
+			DatabaseManager.getInstance().saveSession(event.getGuild().getId(), event.getMember().getId(),
 					startTime, endTime);
 		} catch (Exception e) {
 			SentryManager.getInstance().handleError(e);

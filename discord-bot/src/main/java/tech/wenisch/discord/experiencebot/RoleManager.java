@@ -7,12 +7,13 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import tech.wenisch.discord.experiencebot.actions.AssignRoleThread;
 import tech.wenisch.discord.experiencebot.actions.UpdateRegularsThread;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class RoleManager {
 	private final static ExecutorService executor = Executors.newFixedThreadPool(1);
 	public static int getLevel(String userID, String guildID)
 	{
-		double totalExp = Double.parseDouble(Bot.getDatabaseConnection().getTotalExp(userID,guildID));
+		double totalExp = Double.parseDouble(DatabaseManager.getInstance().getTotalExp(userID,guildID));
 		return (int) (Math.log(totalExp)/Math.log(3));
 	}
 

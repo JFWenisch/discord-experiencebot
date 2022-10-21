@@ -1,3 +1,4 @@
 /.metadata
 /discord-bot/target
 /chart/start.bat
+/postgres-data

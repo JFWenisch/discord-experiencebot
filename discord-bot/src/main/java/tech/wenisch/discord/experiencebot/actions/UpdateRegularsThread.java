@@ -7,8 +7,8 @@ import io.sentry.Sentry;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
-import tech.wenisch.discord.experiencebot.Bot;
 import tech.wenisch.discord.experiencebot.SentryManager;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class UpdateRegularsThread extends Thread {
 	GuildVoiceJoinEvent event;
@@ -24,7 +24,7 @@ public class UpdateRegularsThread extends Thread {
 		}
 		try {
 			String roleName = event.getGuild().getName().toUpperCase() + " REGULARS";
-			List<String> assignableMembers = Bot.getDatabaseConnection().getRegulars(event.getGuild().getId());
+			List<String> assignableMembers = DatabaseManager.getInstance().getRegulars(event.getGuild().getId());
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
 			Role destRole = null;
 			if (roles.size() < 1) {

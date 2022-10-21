@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import io.sentry.ITransaction;
-import io.sentry.Sentry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -14,6 +12,7 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import tech.wenisch.discord.experiencebot.exceptions.NoSessionStartTimeException;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class OnlineListener extends ListenerAdapter {
 	Map<String, Long> timelog = new HashMap<String, Long>();
@@ -66,7 +65,7 @@ public class OnlineListener extends ListenerAdapter {
 	}
 
 	public static String generateSessionNotification(long startTime, long endTime, GuildVoiceLeaveEvent event) {
-		String totalExp = Bot.getDatabaseConnection().getTotalExp(event.getMember().getId(), event.getGuild().getId());
+		String totalExp = DatabaseManager.getInstance().getTotalExp(event.getMember().getId(), event.getGuild().getId());
 		long diff = endTime - startTime;
 		String timeOnlineMessage = TimeUtils.formatDuration(diff);
 		StringBuilder sb = new StringBuilder();
