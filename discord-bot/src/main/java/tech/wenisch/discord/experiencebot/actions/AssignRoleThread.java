@@ -6,6 +6,7 @@ import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import tech.wenisch.discord.experiencebot.Bot;
 import tech.wenisch.discord.experiencebot.RoleManager;
 import tech.wenisch.discord.experiencebot.SentryManager;
 
@@ -17,6 +18,7 @@ public class AssignRoleThread extends Thread {
 	}
 
 	public void run() {
+		Thread.currentThread().setName("AssignRole");
 		ITransaction transaction = null;
 		if (SentryManager.getInstance().isActivated()) {
 			transaction = Sentry.startTransaction("AssignRole", event.getGuild().getName().toUpperCase());
@@ -24,21 +26,21 @@ public class AssignRoleThread extends Thread {
 		try {
 			int level = RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId());
 			String roleName=event.getGuild().getName().toUpperCase()+" LVL "+level;
-			System.out.println(event.getMember().getId() +" is on lvl "+ level+". Trying to assign role");
+			Bot.logger.info(event.getMember().getEffectiveName() +" is on lvl "+ level+" at "+event.getGuild().getName()+". Trying to assign role");
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
 			if(roles.size()>0)
 			{
 				Role destRole = roles.get(0);
 				event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
-				System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+				Bot.logger.info("Successfully assigned member "+event.getMember().getEffectiveName()+" to role "+destRole+" at "+event.getGuild().getName()+".");
 
 			}
 			else
 			{
 				Role destRole = event.getGuild().createRole().setName(roleName).complete();
-				System.out.println("Successfully created role "+destRole);
+				Bot.logger.info("Successfully created role "+destRole+" at "+event.getGuild().getName()+".");
 				event.getGuild().addRoleToMember(event.getMember(), destRole).queue();
-				System.out.println("Successfully assigned member "+event.getMember()+" to role "+destRole);
+				Bot.logger.info("Successfully assigned member "+event.getMember().getEffectiveName()+" to role "+destRole+" at "+event.getGuild().getName()+".");
 			}
 
 		} catch (Exception e) {

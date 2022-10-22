@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 
-import tech.wenisch.discord.experiencebot.OnlineListener;
+import tech.wenisch.discord.experiencebot.ExperienceManager;
 import tech.wenisch.discord.experiencebot.SentryManager;
 
 @Component
@@ -35,7 +35,7 @@ public class DatabaseManager {
 	public void saveSession(String guildID, String userID, long startTime, long endTime) {
 
 		Integer sessionID = storeSessionInfo(guildID, userID, String.valueOf(startTime), String.valueOf(endTime));
-		storeSessionExp(OnlineListener.generateEXPFromSession(startTime, endTime), sessionID, userID);
+		storeSessionExp(ExperienceManager.generateEXPFromSession(startTime, endTime), sessionID, userID);
 
 	}
 

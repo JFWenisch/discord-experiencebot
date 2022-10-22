@@ -1,4 +1,4 @@
-package tech.wenisch.discord.experiencebot;
+package tech.wenisch.discord.experiencebot.listeners;
 
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import tech.wenisch.discord.experiencebot.SentryManager;
 
 public class PingPongListener extends ListenerAdapter {
 	
