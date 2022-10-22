@@ -9,27 +9,32 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import tech.wenisch.discord.experiencebot.Bot;
 import tech.wenisch.discord.experiencebot.SentryManager;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class UpdateRegularsThread extends Thread {
 	GuildVoiceJoinEvent event;
 
 	public UpdateRegularsThread(GuildVoiceJoinEvent event) {
 		this.event = event;
+		
 	}
 
 	public void run() {
+		Thread.currentThread().setName("UpdateRegulars");
+		Bot.logger.info("Updating regulars for "+event.getGuild().getName());
 		ITransaction transaction = null;
 		if (SentryManager.getInstance().isActivated()) {
 			transaction = Sentry.startTransaction("UpdateRegulars", event.getGuild().getName().toUpperCase());
 		}
 		try {
 			String roleName = event.getGuild().getName().toUpperCase() + " REGULARS";
-			List<String> assignableMembers = Bot.getDatabaseConnection().getRegulars(event.getGuild().getId());
+			List<String> assignableMembers = DatabaseManager.getInstance().getRegulars(event.getGuild().getId());
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
 			Role destRole = null;
 			if (roles.size() < 1) {
+				Bot.logger.info("Regular Role on "+event.getGuild().getName()+" could not be found. Creating Role");
 				destRole = event.getGuild().createRole().setName(roleName).complete();
-				System.out.println("Successfully created role " + destRole);
+				Bot.logger.info("Successfully created role " + destRole);
 			} else {
 				destRole = roles.get(0);
 			}
@@ -37,7 +42,7 @@ public class UpdateRegularsThread extends Thread {
 			// Add assignable Members
 			for (int i = 0; i < assignableMembers.size(); i++) {
 				event.getGuild().addRoleToMember(assignableMembers.get(i), destRole).queue();
-				System.out.println("Added member " + assignableMembers.get(i) + " to regular role");
+				Bot.logger.info("Added member " + assignableMembers.get(i) + " to regular role");
 			}
 
 			List<Member> members = event.getGuild().findMembers(member -> {
@@ -50,7 +55,7 @@ public class UpdateRegularsThread extends Thread {
 			for (int i = 0; i < members.size(); i++) {
 				if (!assignableMembers.contains(members.get(i).getId())) {
 					event.getGuild().removeRoleFromMember(members.get(i), createdRole).queue();
-					System.out.println("Removed member " + members.get(i) + " from regular role");
+					Bot.logger.info("Removed member " + members.get(i) + " from regular role");
 				}
 			}
 		} catch (Exception e) {

@@ -43,7 +43,8 @@ public class SentryManager {
     	 }
     	else
     	{
-    		e.printStackTrace();
+    		Bot.logger.error(e.getMessage());
+    	//	e.printStackTrace();
     	}
     }
 }

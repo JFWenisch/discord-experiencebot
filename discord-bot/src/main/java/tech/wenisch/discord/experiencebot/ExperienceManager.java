@@ -1,8 +1,11 @@
 package tech.wenisch.discord.experiencebot;
 
+import java.util.concurrent.TimeUnit;
+
 import io.sentry.ITransaction;
 import io.sentry.Sentry;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
 public class ExperienceManager 
 {
@@ -15,9 +18,10 @@ public class ExperienceManager
 		}
 		try {
 			String timeOnlineMessage = TimeUtils.formatDuration(diff);
-			System.out.println(event.getMember().getEffectiveName()+" left "+event.getGuild().getName()+ "after" + timeOnlineMessage);
-			Bot.getDatabaseConnection().saveSession(event.getGuild().getId(), event.getMember().getId(),
+			DatabaseManager.getInstance().saveSession(event.getGuild().getId(), event.getMember().getId(),
 					startTime, endTime);
+			Bot.logger.info(event.getMember().getEffectiveName()+" received "+ timeOnlineMessage.substring(0,timeOnlineMessage.indexOf(" "))  +"EXP for his session on "+event.getGuild().getName() );
+			
 		} catch (Exception e) {
 			SentryManager.getInstance().handleError(e);
 		} finally {
@@ -27,4 +31,8 @@ public class ExperienceManager
 		}
 
 	}
+	public static long generateEXPFromSession(long startTime, long endTime) {
+		long diff = endTime - startTime;
+		return TimeUnit.MILLISECONDS.toSeconds(diff);
+	}	
 }

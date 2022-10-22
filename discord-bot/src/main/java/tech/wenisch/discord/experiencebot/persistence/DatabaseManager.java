@@ -1,7 +1,5 @@
 package tech.wenisch.discord.experiencebot.persistence;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,152 +7,141 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import tech.wenisch.discord.experiencebot.OnlineListener;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.stereotype.Component;
+
+import tech.wenisch.discord.experiencebot.ExperienceManager;
 import tech.wenisch.discord.experiencebot.SentryManager;
 
+@Component
 public class DatabaseManager {
 
-	private static Connection connection =null;
-	public DatabaseManager()
-	{
-		getConnection();
+	private JdbcTemplate jdbcTemplate;
+	private static final DatabaseManager instance = new DatabaseManager();
+	public static DatabaseManager getInstance(){
+		return instance;
 	}
-	public  Connection getConnection() {
-		if (connection== null) 
-		{
-			String url = System.getenv("DATABASE_URL");
-			String user = System.getenv("DATABASE_USER");
-			String password = System.getenv("DATABASE_PASSWORD");
+	private DatabaseManager() {
+		DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
+		driverManagerDataSource.setUrl("jdbc:postgresql://localhost:5432/experience");
+		driverManagerDataSource.setUsername("user");
+		driverManagerDataSource.setPassword("topsecret");
+		jdbcTemplate = new JdbcTemplate(driverManagerDataSource);
+	}
 
-			try {
-				connection = DriverManager.getConnection(url, user, password);
-				System.out.println("Successfully connected to database "+url);
-			} catch (SQLException ex) {
-				SentryManager.getInstance().handleError(ex);
-			}
+	public void saveSession(String guildID, String userID, long startTime, long endTime) {
+
+		Integer sessionID = storeSessionInfo(guildID, userID, String.valueOf(startTime), String.valueOf(endTime));
+		storeSessionExp(ExperienceManager.generateEXPFromSession(startTime, endTime), sessionID, userID);
+
+	}
+
+	private Integer storeSessionExp(long generateEXPFromSession, Integer sessionID, String userID) {
+		Integer primaryKey = null;
+		String sql = "INSERT INTO " + "session_exp (session, member, exp) " + "VALUES(?, ?, ?)";
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+
+		jdbcTemplate.update(conn -> {
+
+			// Pre-compiling SQL
+			PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+			// Set parameters
+			preparedStatement.setInt(1, sessionID);
+			preparedStatement.setString(2, userID);
+			preparedStatement.setInt(3, Integer.valueOf(String.valueOf(generateEXPFromSession)));
+
+			return preparedStatement;
+
+		}, generatedKeyHolder);
+		if (generatedKeyHolder.getKeys().size() > 1) {
+			primaryKey = (int) generatedKeyHolder.getKeys().get("id");
+		} else {
+			primaryKey = generatedKeyHolder.getKey().intValue();
+		}
+		return primaryKey;
+	}
+
+	private Integer storeSessionInfo(String guildID, String userID, String startTime, String endTime) {
+		Integer primaryKey = null;
+		String sql = "INSERT INTO " + "sessions (guild, member, starttime, endtime) " + "VALUES(?, ?, ?, ?)";
+		GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+
+		jdbcTemplate.update(conn -> {
+
+			// Pre-compiling SQL
+			PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+			// Set parameters
+			preparedStatement.setString(1, guildID);
+			preparedStatement.setString(2, userID);
+			preparedStatement.setString(3, startTime);
+			preparedStatement.setString(4, endTime);
+
+			return preparedStatement;
+
+		}, generatedKeyHolder);
+		if (generatedKeyHolder.getKeys().size() > 1) {
+			primaryKey = (int) generatedKeyHolder.getKeys().get("id");
+		} else {
+			primaryKey = generatedKeyHolder.getKey().intValue();
 		}
 
-		return connection;
+		// System.out.println("Saved session " + sessionID + " for " + userID + " on " +
+		// guildID);
+
+		return primaryKey;
 	}
 
-	public  void saveSession(String guildID, String userID, long startTime, long endTime) {
-
-		Integer sessionID= storeSessionInfo(guildID,userID,String.valueOf(startTime),String.valueOf(endTime));
-		storeSessionExp(OnlineListener.generateEXPFromSession(startTime, endTime),sessionID, userID);
-
-	}
-	private void storeSessionExp(long generateEXPFromSession, Integer sessionID, String userID) {
-		String sql = "INSERT INTO "
-				+ "session_exp (session, member, exp) "
-				+ "VALUES(?, ?, ?)";
-
-
-		try (PreparedStatement statement = connection.prepareStatement( sql, Statement.RETURN_GENERATED_KEYS)) 
-		{
-
-			statement.setInt(1,sessionID);
-			statement.setString(2, userID);
-			statement.setInt(3, Integer.valueOf(String.valueOf(generateEXPFromSession)));
-			statement.executeUpdate();
-
-
-
-			System.out.println("Saved  "+generateEXPFromSession+" EXP for "+userID+" based on session "+ sessionID);
-		} catch (SQLException ex) {
-			SentryManager.getInstance().handleError(ex);
-		}
-
-
-	}
-	private Integer storeSessionInfo(String guildID, String userID, String startTime, String endTime) 
-	{
-		String sql = "INSERT INTO "
-				+ "sessions (guild, member, starttime, endtime) "
-				+ "VALUES(?, ?, ?, ?)";
-
-		Integer sessionID = null;
-		try (PreparedStatement statement = connection.prepareStatement( sql, Statement.RETURN_GENERATED_KEYS)) 
-		{
-
-			statement.setString(1, guildID);
-			statement.setString(2, userID);
-			statement.setString(3, startTime);
-			statement.setString(4, endTime);
-			int numberOfInsertedRows = statement.executeUpdate();
-
-
-			// Retrieve the auto-generated id
-			if (numberOfInsertedRows > 0) 
-			{
-				try (ResultSet resultSet = statement.getGeneratedKeys())
-				{
-					if (resultSet.next()) 
-					{
-						sessionID = resultSet.getInt(1);
-					}
-				}
-			}
-			System.out.println("Saved session "+sessionID+" for "+userID+" on "+ guildID);
-		} catch (SQLException ex) {
-			SentryManager.getInstance().handleError(ex);
-		}
-
-		return sessionID;
-	}
-	public String getTotalExp(String userID, String guildID)
-	{
+	public String getTotalExp(String userID, String guildID) {
 		String sql = "SELECT sum(exp) as total_exp FROM session_exp  INNER JOIN sessions on session_exp.session = sessions.id  where session_exp.member ='"
-				+ userID
-				+ "' and sessions.guild='"
-				+ guildID
-				+ "'";
+				+ userID + "' and sessions.guild='" + guildID + "'";
+		String totalEXP = "0";
 
-		try (Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(sql)) {
-
-			if (resultSet.next()) {
-				return resultSet.getString(1);
-
-			}
-
-		} catch (SQLException ex) {
+		try {
+			totalEXP = (String) jdbcTemplate.queryForObject(sql, String.class);
+		} catch (Exception ex) {
 			SentryManager.getInstance().handleError(ex);
 		}
-		return "0";
+		return totalEXP;
 	}
-	public List<String> getTopFiveUsers()
-	{
+
+	public List<String> getTopFiveUsers() {
 		List<String> userIDs = new ArrayList<String>();
 		String sql = "SELECT member, sum(exp) as total_exp FROM session_exp GROUP BY member ORDER BY total_exp DESC LIMIT (5)";
+		try {
+			jdbcTemplate.query(sql, new RowCallbackHandler() {
+				public void processRow(ResultSet resultSet) throws SQLException {
+					while (resultSet.next()) {
+						userIDs.add(resultSet.getString(1));
+					}
+				}
+			});
 
-		try (Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(sql)) {
-
-			while (resultSet.next()) {
-				userIDs.add(resultSet.getString(1));
-
-			}
-
-		} catch (SQLException ex) {
+		} catch (Exception ex) {
 			SentryManager.getInstance().handleError(ex);
 		}
 		return userIDs;
 	}
-	public List<String> getRegulars(String guildID)
-	{
+
+	public List<String> getRegulars(String guildID) {
 		List<String> userIDs = new ArrayList<String>();
-	
-		String sql = "SELECT * FROM ( SELECT member, SUM (diff_minutes) as spendtime, count(*) as visits FROM ( SELECT  * ,extract(epoch FROM to_timestamp(CAST(endtime as bigint)/1000) - to_timestamp(CAST(starttime as bigint)/1000))/ 60 as diff_minutes FROM sessions WHERE  to_timestamp(CAST(endtime as bigint)/1000)  >  NOW() - INTERVAL '14 days' and guild='"+guildID+"' ) as timedifftable GROUP BY member ) as resulttable WHERE spendtime > 60 AND visits > 3";
 
-		try (Statement statement = connection.createStatement();
-				ResultSet resultSet = statement.executeQuery(sql)) {
+		String sql = "SELECT * FROM ( SELECT member, SUM (diff_minutes) as spendtime, count(*) as visits FROM ( SELECT  * ,extract(epoch FROM to_timestamp(CAST(endtime as bigint)/1000) - to_timestamp(CAST(starttime as bigint)/1000))/ 60 as diff_minutes FROM sessions WHERE  to_timestamp(CAST(endtime as bigint)/1000)  >  NOW() - INTERVAL '14 days' and guild='"
+				+ guildID + "' ) as timedifftable GROUP BY member ) as resulttable WHERE spendtime > 60 AND visits > 3";
+		try {
+			jdbcTemplate.query(sql, new RowCallbackHandler() {
+				public void processRow(ResultSet resultSet) throws SQLException {
+					while (resultSet.next()) {
+						userIDs.add(resultSet.getString("member"));
+					}
+				}
+			});
 
-			while (resultSet.next()) {
-				userIDs.add(resultSet.getString("member"));
-				System.out.println("Aggregated for member "+resultSet.getString("member")+"  "+resultSet.getString("visits")+" visits and " +resultSet.getString("spendtime")+" spend minutes in total");
-			}
-
-		} catch (SQLException ex) {
+		} catch (Exception ex) {
 			SentryManager.getInstance().handleError(ex);
 		}
 		return userIDs;
