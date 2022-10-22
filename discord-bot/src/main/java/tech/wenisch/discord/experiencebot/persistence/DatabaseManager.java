@@ -109,9 +109,9 @@ public class DatabaseManager {
 		return totalEXP;
 	}
 
-	public List<String> getTopFiveUsers() {
+	public List<String> getTopUsers(String guildID) {
 		List<String> userIDs = new ArrayList<String>();
-		String sql = "SELECT member, sum(exp) as total_exp FROM session_exp GROUP BY member ORDER BY total_exp DESC LIMIT (5)";
+		String sql = "SELECT session_exp.member, sum(exp) as total_exp FROM session_exp INNER JOIN sessions on session_exp.session = sessions.id where sessions.guild='" + guildID + "'"+" GROUP BY session_exp.member ORDER BY total_exp DESC LIMIT (10)";
 		try {
 			jdbcTemplate.query(sql, new RowCallbackHandler() {
 				public void processRow(ResultSet resultSet) throws SQLException {
