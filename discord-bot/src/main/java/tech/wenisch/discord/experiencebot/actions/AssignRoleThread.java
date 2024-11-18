@@ -25,6 +25,11 @@ public class AssignRoleThread extends Thread {
 		}
 		try {
 			int level = RoleManager.getLevel(event.getMember().getId(),event.getGuild().getId());
+			if (level < 0)
+			{
+				Bot.logger.info("Level for " +event.getMember().getEffectiveName()+" cannot be identified (level="+level+"). Resetting level to 0.");
+				level = 0;
+			}
 			String roleName=event.getGuild().getName().toUpperCase()+" LVL "+level;
 			Bot.logger.info(event.getMember().getEffectiveName() +" is on lvl "+ level+" at "+event.getGuild().getName()+". Trying to assign role");
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
