@@ -52,11 +52,6 @@ jobs:
       with:
         images: ghcr.io/jfwenisch/discord-experiencebot
         
-    - name: list files root
-      run: ls -l
-      
-    - name: list files target
-      run: cd discord-bot/target && ls -l
       
     - name: Build and push Docker image
       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -67,6 +62,43 @@ jobs:
           ghcr.io/jfwenisch/discord-experiencebot:${{needs.version.outputs.tag}}
           ghcr.io/jfwenisch/discord-experiencebot:latest
         labels: ${{ steps.meta.outputs.labels }}
+
+
+    - name: Update Helm chart version
+      run:  |
+        yq eval '.appVersion = "${{ needs.version.outputs.tag }}"' -i chart/Chart.yaml
+        yq eval '.version = "${{ needs.version.outputs.tag }}"' -i chart/Chart.yaml
+
+    - name: Commit and push updated Helm chart
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add chart/Chart.yaml
+        git commit -m "[skip ci] Update Helm chart appVersion to ${{ needs.version.outputs.tag }}"
+        git push origin ${{ github.ref }}
+
+    - name: Package Helm chart
+      run: helm package chart/ --destination ./release
+
+
+    - name: Upload Helm chart artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: helm-chart
+        path: ./release/*.tgz
+        
+    - name: Clone charts repository
+      env:
+        GH_TOKEN: ${{ secrets.GITHUBTOKEN }}
+      run: |
+        git clone https://$GH_TOKEN@github.com/JFWenisch/charts.git
+        cp ./release/*.tgz charts/discord-experiencebot/
+        cd charts
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .
+        git commit -m "Add discord-experiencebot chart in version ${{ needs.version.outputs.tag }}"
+        git push https://$GH_TOKEN@github.com/JFWenisch/charts.git main
 
 
   release:
