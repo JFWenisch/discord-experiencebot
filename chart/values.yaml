@@ -16,11 +16,17 @@ discord:
 sentry:
   dsn:
 
+storage:
+  class: local-path
+  accessmode: ReadWriteOnce
+  size: 1Gi
+
+
 image:
   repository: ghcr.io/jfwenisch/discord-experiencebot
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.6.8"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
