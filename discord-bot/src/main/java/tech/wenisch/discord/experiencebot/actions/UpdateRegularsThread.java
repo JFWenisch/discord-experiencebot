@@ -31,6 +31,7 @@ public class UpdateRegularsThread implements Runnable {
 		try {
 			String roleName = event.getGuild().getName().toUpperCase() + " REGULARS";
 			List<String> assignableMembers = databaseManager.getRegulars(event.getGuild().getId());
+			System.out.println("There are a total of " + assignableMembers.size() +" regular members on "+event.getGuild().getName());
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
 			Role destRole = null;
 			if (roles.size() < 1) {
