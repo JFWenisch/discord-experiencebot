@@ -5,8 +5,7 @@
 replicaCount: 1
 
 database:
-  name: experience
-  url: jdbc:postgresql://127.0.0.1:5432/experience
+  url:  jdbc:sqlite:/dexbo-data/dexbo.db
   user: user
   password: topsecret
 
@@ -17,7 +16,7 @@ sentry:
   dsn:
 
 storage:
-  class: local-path
+  class: 
   accessmode: ReadWriteOnce
   size: 1Gi
 

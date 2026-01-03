@@ -81,7 +81,7 @@ public class MessageReplyListener extends ListenerAdapter {
 	}
 
 	public static String generateLevelResponse(String username, String userID, String guildID) {
-		String totalExp = DatabaseManager.getInstance().getTotalExp(userID, guildID);
+		String totalExp = Bot.getBean(DatabaseManager.class).getTotalExp(userID, guildID);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Yo " + username + ", ");
 		sb.append("You are now on lvl " + RoleManager.getLevel(userID, guildID) + " with " + totalExp
@@ -90,7 +90,7 @@ public class MessageReplyListener extends ListenerAdapter {
 	}
 
 	public static String generateTopUsersResponse(String guildID) {
-		List<String> users = DatabaseManager.getInstance().getTopUsers(guildID);
+		List<String> users = Bot.getBean(DatabaseManager.class).getTopUsers(guildID);
 		if (users.size() < 1)
 			return "There are currently no Users with EXP on this server";
 		StringBuilder sb = new StringBuilder();
@@ -102,7 +102,7 @@ public class MessageReplyListener extends ListenerAdapter {
 	}
 
 	public static String generateRegularsResponse(String guildID) {
-		List<String> regulars = DatabaseManager.getInstance().getRegulars(guildID);
+		List<String> regulars = Bot.getBean(DatabaseManager.class).getRegulars(guildID);
 		if (regulars.size() < 1)
 			return "There are currently no regulars on this server";
 		StringBuilder sb = new StringBuilder();

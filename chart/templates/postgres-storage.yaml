@@ -1,7 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: postgres-pv-claim
+  name: database-pv-claim
   labels:
     {{- include "discord-experiencebot.labels" . | nindent 4 }}
 spec:

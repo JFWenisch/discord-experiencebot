@@ -33,41 +33,22 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /dexbo-data
+              name: database-pv
           env:
-            - name: DATABASE_URL
+            - name: SPRING_DATASOURCE_URL
               value: {{  .Values.database.url | quote }}
-            - name: DATABASE_USER
-              value: {{  .Values.database.user | quote }}
-            - name: DATABASE_PASSWORD
-              value: {{  .Values.database.password | quote }}
             - name: DC_TOKEN
               value: {{ .Values.discord.token | quote }}
             - name: SENTRY_DSN
               value: {{ .Values.sentry.dsn | quote }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-        - name: postgres
-          image: postgres:10.1
-          imagePullPolicy: "IfNotPresent"
-          ports:
-            - name: database
-              containerPort: 5432
-              protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: postgres-config
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: postgredb
-            - name: init-sql-script
-              mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: postgredb
+        - name: database-pv
           persistentVolumeClaim:
-            claimName: postgres-pv-claim
-        - name: init-sql-script
-          configMap:
-            name: init-sql-script
+            claimName: database-pv-claim
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

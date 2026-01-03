@@ -18,7 +18,7 @@ public class ExperienceManager
 		}
 		try {
 			String timeOnlineMessage = TimeUtils.formatDuration(diff);
-			DatabaseManager.getInstance().saveSession(event.getGuild().getId(), event.getMember().getId(),
+			Bot.getBean(DatabaseManager.class).saveSession(event.getGuild().getId(), event.getMember().getId(),
 					startTime, endTime);
 			Bot.logger.info(event.getMember().getEffectiveName()+" received "+ timeOnlineMessage.substring(0,timeOnlineMessage.indexOf(" "))  +"EXP for his session on "+event.getGuild().getName() );
 			

@@ -10,6 +10,7 @@ RUN apt-get install -y console-setup sudo wget curl unzip openjdk-8-jdk-headless
 RUN useradd --create-home -s /bin/bash user && \
     adduser user sudo && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
+RUN mkdir -p /dexbo-data && chown -R user:user /dexbo-data
 
 USER user
 ENV USER=user

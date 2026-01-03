@@ -30,13 +30,15 @@ public class SessionNotificationMessageThread extends Thread {
 			transaction = Sentry.startTransaction("SessionNotification", event.getMember().getEffectiveName());
 		}
 		try {
-			String message = generateSessionNotification(event, startTime, endTime);
-
-			event.getMember().getUser().openPrivateChannel().flatMap(channel -> channel.sendMessage(message)).queue(
-					null,
-					new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER,
-							(ex) -> Bot.logger.warn("Cannot send private message to "
-									+ event.getMember().getEffectiveName() + " (" + ex.getMessage() + ")")));
+//			String message = generateSessionNotification(event, startTime, endTime);
+//
+//			event.getMember().getUser().openPrivateChannel().flatMap(channel -> channel.sendMessage(message)).queue(
+//					null,
+//					new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER,
+//							(ex) -> Bot.logger.warn("Cannot send private message to "
+//									+ event.getMember().getEffectiveName() + " (" + ex.getMessage() + ")")));
+			System.out.println("Session Notification for " + event.getMember().getEffectiveName() + " on guild "
+					+ event.getGuild().getName() + " would be sent now.");
 
 		} catch (Exception e) {
 			SentryManager.getInstance().handleError(e);
@@ -48,7 +50,7 @@ public class SessionNotificationMessageThread extends Thread {
 	}
 
 	public static String generateSessionNotification(GuildVoiceLeaveEvent event, long startTime, long endTime) {
-		String totalExp = DatabaseManager.getInstance().getTotalExp(event.getMember().getId(),
+		String totalExp = Bot.getBean(DatabaseManager.class).getTotalExp(event.getMember().getId(),
 				event.getGuild().getId());
 		long diff = endTime - startTime;
 		String timeOnlineMessage = TimeUtils.formatDuration(diff);

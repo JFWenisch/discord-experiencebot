@@ -11,11 +11,13 @@ import tech.wenisch.discord.experiencebot.Bot;
 import tech.wenisch.discord.experiencebot.SentryManager;
 import tech.wenisch.discord.experiencebot.persistence.DatabaseManager;
 
-public class UpdateRegularsThread extends Thread {
+public class UpdateRegularsThread implements Runnable {
 	GuildVoiceJoinEvent event;
+	private final DatabaseManager databaseManager;
 
-	public UpdateRegularsThread(GuildVoiceJoinEvent event) {
+	public UpdateRegularsThread(GuildVoiceJoinEvent event, DatabaseManager databaseManager) {
 		this.event = event;
+		this.databaseManager = databaseManager;
 		
 	}
 
@@ -28,7 +30,7 @@ public class UpdateRegularsThread extends Thread {
 		}
 		try {
 			String roleName = event.getGuild().getName().toUpperCase() + " REGULARS";
-			List<String> assignableMembers = DatabaseManager.getInstance().getRegulars(event.getGuild().getId());
+			List<String> assignableMembers = databaseManager.getRegulars(event.getGuild().getId());
 			List<Role> roles = event.getGuild().getRolesByName(roleName, true);
 			Role destRole = null;
 			if (roles.size() < 1) {
